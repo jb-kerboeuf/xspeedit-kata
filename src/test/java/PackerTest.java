@@ -13,4 +13,10 @@ public class PackerTest {
         Packer packer = new Packer();
         Assert.assertEquals("16", packer.pack("16"));
     }
+
+    @Test
+    public void shouldMakeTwoPackages() {
+        Packer packer = new Packer();
+        Assert.assertEquals("9/6", packer.pack("96"));
+    }
 }
