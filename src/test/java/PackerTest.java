@@ -19,4 +19,10 @@ public class PackerTest {
         Packer packer = new Packer();
         Assert.assertEquals("9/6", packer.standardPacking("96"));
     }
+
+    @Test
+    public void acceptanceOptimizedPacker() {
+        Packer packer = new Packer();
+        Assert.assertEquals("19/64/37/82/163/8/55/7", packer.optimizedPacking("163841689525773"));
+    }
 }
