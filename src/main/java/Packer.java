@@ -1,59 +1,44 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Packer {
-    private static final int MAX_PACK_WEIGHT = 10;
+    private static final int MAX_PACK_SIZE = 10;
+    private List<Pack> packs = new ArrayList<>();
 
-    @Deprecated
-    public String standardPacking(String articlesChain) {
-        List<Integer> articlesWeights = getArticlesWeightsFromChain(articlesChain);
+    public void processArticlesChain(String articlesChain) {
+        List<Article> articles = getArticlesFromChain(articlesChain);
+        Pack articlesNotYetPacked = new Pack(articles);
 
-        String packedChain = "";
-        int packWeight = 0;
-        for (int articleWeight : articlesWeights) {
-            if (packWeight + articleWeight > MAX_PACK_WEIGHT) {
-                packedChain += "/";
-                packWeight = 0;
+        Pack currentPack = new Pack();
+        while (articlesNotYetPacked.getNumberOfArticles() > 0) {
+            Article biggestArticleToFit = articlesNotYetPacked.getBiggestArticleToFit(MAX_PACK_SIZE - currentPack.getSize());
+            if (biggestArticleToFit != null) {
+                currentPack.add(biggestArticleToFit);
+                articlesNotYetPacked.remove(biggestArticleToFit);
+            } else {
+                packs.add(currentPack);
+                currentPack = new Pack();
             }
-            packWeight += articleWeight;
-            packedChain += articleWeight;
         }
-        return packedChain;
+        packs.add(currentPack);
     }
 
-    public String optimizedPacking(String articlesChain) {
-        List<Integer> articlesWeights = getArticlesWeightsFromChain(articlesChain);
-        List<Integer> articlesNotYetPacked = new ArrayList<>(articlesWeights);
-
-        String packedChain = "";
-        int packWeight = 0;
-
-        while (articlesNotYetPacked.size() > 0) {
-            int idealWeightToAdd = MAX_PACK_WEIGHT - packWeight;
-            if (articlesNotYetPacked.contains(idealWeightToAdd)) {
-                packedChain += idealWeightToAdd + "/";
-                packWeight = 0;
-                articlesNotYetPacked.remove(Integer.valueOf(idealWeightToAdd));
-                continue;
-            }
-            int articleWeight = articlesNotYetPacked.get(0);
-            if (packWeight + articleWeight <= MAX_PACK_WEIGHT) {
-                packedChain += articleWeight;
-                packWeight += articleWeight;
-                articlesNotYetPacked.remove(Integer.valueOf(articleWeight));
-                continue;
-            }
-            packedChain += "/";
-            packWeight = 0;
+    private List<Article> getArticlesFromChain(String articlesChain) {
+        List<Article> articles = new ArrayList<>();
+        for (String articleSize : articlesChain.split("")) {
+            Article article = new Article(Integer.parseInt(articleSize));
+            articles.add(article);
         }
-        return packedChain;
+        return articles;
     }
 
-    private List<Integer> getArticlesWeightsFromChain(String articlesChain) {
-        List<Integer> articlesWeights = new ArrayList<>();
-        for (String article : articlesChain.split("")) {
-            articlesWeights.add(Integer.parseInt(article));
-        }
-        return articlesWeights;
+    int getNumberOfPacks() {
+        return packs.size();
+    }
+
+    @Override
+    public String toString() {
+        return packs.stream().map(Pack::toString).collect(Collectors.joining("/"));
     }
 }
